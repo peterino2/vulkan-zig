@@ -469,12 +469,12 @@ fn parseCommand(allocator: Allocator, elem: *xml.Element) !registry.Declaration 
     const return_type = try allocator.create(registry.TypeInfo);
     return_type.* = command_decl.decl_type.typedef;
 
-    const success_codes = if (elem.getAttribute("successcodes")) |codes|
+    var success_codes: [][]const u8 = if (elem.getAttribute("successcodes")) |codes|
         try splitCommaAlloc(allocator, codes)
     else
         &[_][]const u8{};
 
-    const error_codes = if (elem.getAttribute("errorcodes")) |codes|
+    var error_codes: [][]const u8 = if (elem.getAttribute("errorcodes")) |codes|
         try splitCommaAlloc(allocator, codes)
     else
         &[_][]const u8{};
