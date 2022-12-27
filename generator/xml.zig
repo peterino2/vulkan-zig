@@ -641,7 +641,7 @@ fn dupeAndUnescape(alloc: Allocator, text: []const u8) ![]const u8 {
         }
     }
 
-    return alloc.shrink(str, j);
+    return try alloc.realloc(str, j);
 }
 
 test "dupeAndUnescape" {

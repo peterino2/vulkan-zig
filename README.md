@@ -1,5 +1,7 @@
 # vulkan-zig
 
+NOTE: This is a vendored fork of snektron/vulkan-zig intended for use with the Neonwood game engine
+
 A Vulkan binding generator for Zig.
 
 [![Actions Status](https://github.com/Snektron/vulkan-zig/workflows/Build/badge.svg)](https://github.com/Snektron/vulkan-zig/actions)

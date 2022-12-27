@@ -72,7 +72,7 @@ const EnumFieldMerger = struct {
 
         // Existing base_enum.fields was allocated by `self.arena`, so
         // it gets cleaned up whenever that is deinited.
-        base_enum.fields = self.arena.shrink(new_fields, i);
+        base_enum.fields = try self.arena.realloc(new_fields, i);
     }
 
     fn merge(self: *EnumFieldMerger) !void {
