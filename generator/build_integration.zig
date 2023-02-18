@@ -49,8 +49,8 @@ pub const ShaderCompileStep = struct {
     pub fn add(self: *ShaderCompileStep, src: []const u8) []const u8 {
         const output_filename = std.fmt.allocPrint(self.builder.allocator, "{s}.spv", .{src}) catch unreachable;
         const full_out_path = path.join(self.builder.allocator, &[_][]const u8{
-            self.builder.build_root,
-            self.builder.cache_root,
+            // self.builder.build_root.path.?,
+            self.builder.cache_root.path.?,
             //self.output_dir,
             output_filename,
         }) catch unreachable;

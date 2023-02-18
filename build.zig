@@ -7,7 +7,7 @@ pub const ResourceGenStep = struct {
     step: Step,
     shader_step: *vkgen.ShaderCompileStep,
     builder: *Builder,
-    package: std.build.Pkg,
+    package: std.build.Module,
     output_file: std.build.GeneratedFile,
     resources: std.ArrayList(u8),
 
@@ -96,12 +96,12 @@ pub fn build(b: *Builder) void {
     const vk_xml_path = b.option([]const u8, "vulkan-registry", "Override the path to the Vulkan registry") orelse "examples/vk.xml";
 
     const gen = vkgen.VkGenerateStep.init(b, vk_xml_path, "vk.zig");
-    triangle_exe.addPackage(gen.package);
+    triangle_exe.addModule(gen.package);
 
     const res = ResourceGenStep.init(b, "resources.zig");
     res.addShader("triangle_vert", "examples/shaders/triangle.vert");
     res.addShader("triangle_frag", "examples/shaders/triangle.frag");
-    triangle_exe.addPackage(res.package);
+    triangle_exe.addModule(res.package);
 
     const triangle_run_cmd = triangle_exe.run();
     triangle_run_cmd.step.dependOn(b.getInstallStep());
