@@ -64,7 +64,7 @@ pub const ShaderCompileStep = struct {
         const cwd = std.fs.cwd();
 
         const cmd = try self.builder.allocator.alloc([]const u8, self.glslc_cmd.len + 3);
-        for (self.glslc_cmd) |part, i| {
+        for (self.glslc_cmd, 0..) |part, i| {
             cmd[i] = part;
         }
         cmd[cmd.len - 2] = "-o";
