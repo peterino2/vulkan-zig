@@ -33,7 +33,12 @@ pub const ShaderCompileStep = struct {
     pub fn init(builder: *Builder, glslc_cmd: []const []const u8, output_dir: []const u8) *ShaderCompileStep {
         const self = builder.allocator.create(ShaderCompileStep) catch unreachable;
         self.* = .{
-            .step = Step.init(.custom, "shader-compile", builder.allocator, make),
+            .step = Step.init(.{
+                .id = .custom,
+                .name = "shader-compile",
+                .makeFn = make,
+                .owner = builder,
+            }),
             .builder = builder,
             .output_dir = output_dir,
             .glslc_cmd = builder.dupeStrings(glslc_cmd),
@@ -59,7 +64,8 @@ pub const ShaderCompileStep = struct {
     }
 
     /// Internal build function.
-    fn make(step: *Step) !void {
+    fn make(step: *Step, progress: *std.Progress.Node) !void {
+        _ = progress;
         const self = @fieldParentPtr(ShaderCompileStep, "step", step);
         const cwd = std.fs.cwd();
 
@@ -74,7 +80,7 @@ pub const ShaderCompileStep = struct {
             try cwd.makePath(dir);
             cmd[cmd.len - 3] = shader.source_path;
             cmd[cmd.len - 1] = shader.full_out_path;
-            try self.builder.spawnChild(cmd);
+            try step.evalChildProcess(cmd);
         }
     }
 };

@@ -24,7 +24,7 @@ pub const GenerateStep = struct {
         }) catch unreachable;
 
         self.* = .{
-            .step = Step.init(.custom, "vulkan-generate", builder.allocator, make),
+            .step = Step.init(.{ .id = .custom, .name = "vulkan-generate", .makeFn = make, .owner = builder }),
             .builder = builder,
             .spec_path = spec_path,
             .package = undefined,
@@ -58,7 +58,8 @@ pub const GenerateStep = struct {
     /// the final bindings. The resulting generated bindings are not formatted, which is why an ArrayList
     /// writer is passed instead of a file writer. This is then formatted into standard formatting
     /// by parsing it and rendering with `std.zig.parse` and `std.zig.render` respectively.
-    fn make(step: *Step) !void {
+    fn make(step: *Step, progress: *std.Progress.Node) !void {
+        _ = progress;
         const self = @fieldParentPtr(GenerateStep, "step", step);
         const cwd = std.fs.cwd();
 
