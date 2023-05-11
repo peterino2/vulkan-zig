@@ -14,6 +14,8 @@ pub const ShaderCompileStep = struct {
 
         /// The full output path where the compiled shader binary is placed.
         full_out_path: []const u8,
+
+        reflected_path: []const u8,
     };
 
     step: Step,
@@ -59,7 +61,11 @@ pub const ShaderCompileStep = struct {
             //self.output_dir,
             output_filename,
         }) catch unreachable;
-        self.shaders.append(.{ .source_path = src, .full_out_path = full_out_path }) catch unreachable;
+        self.shaders.append(.{
+            .source_path = src,
+            .full_out_path = full_out_path,
+            .reflected_path = std.fmt.allocPrint(self.builder.allocator, "{s}.json", .{full_out_path}) catch unreachable,
+        }) catch unreachable;
         return full_out_path;
     }
 
