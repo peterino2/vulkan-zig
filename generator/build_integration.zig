@@ -75,12 +75,30 @@ pub const ShaderCompileStep = struct {
         }
         cmd[cmd.len - 2] = "-o";
 
+        var allocator = self.builder.allocator;
+
         for (self.shaders.items) |shader| {
             const dir = path.dirname(shader.full_out_path).?;
             try cwd.makePath(dir);
             cmd[cmd.len - 3] = shader.source_path;
             cmd[cmd.len - 1] = shader.full_out_path;
             try step.evalChildProcess(cmd);
+            // run spirv-cross to generate an output json file with meta information
+            var spirvCrossCmdFull = try allocator.alloc([]const u8, 5);
+            defer allocator.free(spirvCrossCmdFull);
+            spirvCrossCmdFull[0] = try std.fmt.allocPrint(allocator, "spirv-cross", .{});
+            spirvCrossCmdFull[1] = try std.fmt.allocPrint(allocator, "{s}", .{shader.full_out_path});
+            spirvCrossCmdFull[2] = try std.fmt.allocPrint(allocator, "--reflect", .{});
+            spirvCrossCmdFull[3] = try std.fmt.allocPrint(allocator, "--output", .{});
+            spirvCrossCmdFull[4] = try std.fmt.allocPrint(allocator, "{s}.json", .{shader.full_out_path});
+
+            try step.evalChildProcess(spirvCrossCmdFull);
+
+            for (spirvCrossCmdFull) |inner| {
+                allocator.free(inner);
+            }
+
+            // Create the associated gpu_structs.zig file
         }
     }
 };

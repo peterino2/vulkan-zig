@@ -3,15 +3,50 @@ const vkgen = @import("generator/index.zig");
 const Step = std.build.Step;
 const Builder = std.build.Builder;
 
+pub const ShaderReflectStep = struct {
+    step: Step,
+    outPath: []const u8,
+
+    pub fn init(builder: *Builder, reflectedStructOut: []const u8) *@This() {
+        const self = builder.allocator.create(@This()) catch unreachable;
+
+        const full_out_path = std.fs.path.join(builder.allocator, &[_][]const u8{
+            builder.build_root,
+            builder.cache_root,
+            reflectedStructOut,
+        }) catch unreachable;
+
+        self.* = .{
+            .step = Step.init(.custom, "ShadersReflect", builder.allocator, make),
+            .outPath = full_path_out,
+        };
+
+        return self;
+    }
+
+    fn make(step: *Step) !void {
+        _ = step;
+        // const self = @fieldParentPtr(ShaderReflectStep, "step", step);
+        // const cwd = std.fs.cwd();
+        // const dir = std.fs.path.dirname(self.outPath);
+
+        // const cwd = std.fs.cwd();
+        // const dir = std.fs.path.dirname(self.output_file.path.?).?;
+        // try cwd.makePath(dir);
+        // try cwd.writeFile(self.output_file.path.?, self.resources.items);
+    }
+};
+
 pub const ResourceGenStep = struct {
     step: Step,
     shader_step: *vkgen.ShaderCompileStep,
+    shader_reflect_step: ShaderReflectStep,
     builder: *Builder,
     package: std.build.Module,
     output_file: std.build.GeneratedFile,
     resources: std.ArrayList(u8),
 
-    pub fn init(builder: *Builder, out: []const u8) *ResourceGenStep {
+    pub fn init(builder: *Builder, out: []const u8, reflectedStructOut: []const u8) *ResourceGenStep {
         const self = builder.allocator.create(ResourceGenStep) catch unreachable;
         const full_out_path = std.fs.path.join(builder.allocator, &[_][]const u8{
             builder.build_root,
@@ -33,9 +68,13 @@ pub const ResourceGenStep = struct {
                 .path = full_out_path,
             },
             .resources = std.ArrayList(u8).init(builder.allocator),
+            .shader_reflect_step = ShaderReflectStep.init(builder, reflectedStructOut),
         };
 
         self.step.dependOn(&self.shader_step.step);
+        self.shader_reflect_step.step.dependOn(&self.shader_step.step);
+        self.step.dependOn(&self.shader_reflect_step.step);
+
         return self;
     }
 
