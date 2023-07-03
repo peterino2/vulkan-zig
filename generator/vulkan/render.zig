@@ -1057,7 +1057,7 @@ fn Renderer(comptime WriterType: type) type {
                 \\            const fields_len = fields_len: {{
                 \\                var fields_len: usize = 0;
                 \\                for (@typeInfo({0s}CommandFlags).Struct.fields) |field| {{
-                \\                    fields_len += @intCast(usize, @boolToInt(@field(cmds, field.name)));
+                \\                    fields_len += @intCast(usize, @intFromBool(@field(cmds, field.name)));
                 \\                }}
                 \\                break :fields_len fields_len;
                 \\            }};
