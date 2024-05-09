@@ -23,7 +23,7 @@ pub fn parseXml(backing_allocator: Allocator, root: *xml.Element) !ParseResult {
 
     const allocator = arena.allocator();
 
-    var reg = registry.Registry{
+    const reg = registry.Registry{
         .copyright = root.getCharData("comment") orelse return error.InvalidRegistry,
         .decls = try parseDeclarations(allocator, root),
         .api_constants = try parseApiConstants(allocator, root),
@@ -39,8 +39,8 @@ pub fn parseXml(backing_allocator: Allocator, root: *xml.Element) !ParseResult {
 }
 
 fn parseDeclarations(allocator: Allocator, root: *xml.Element) ![]registry.Declaration {
-    var types_elem = root.findChildByTag("types") orelse return error.InvalidRegistry;
-    var commands_elem = root.findChildByTag("commands") orelse return error.InvalidRegistry;
+    const types_elem = root.findChildByTag("types") orelse return error.InvalidRegistry;
+    const commands_elem = root.findChildByTag("commands") orelse return error.InvalidRegistry;
 
     const decl_upper_bound = types_elem.children.items.len + commands_elem.children.items.len;
     const decls = try allocator.alloc(registry.Declaration, decl_upper_bound);
@@ -469,12 +469,12 @@ fn parseCommand(allocator: Allocator, elem: *xml.Element) !registry.Declaration 
     const return_type = try allocator.create(registry.TypeInfo);
     return_type.* = command_decl.decl_type.typedef;
 
-    var success_codes: [][]const u8 = if (elem.getAttribute("successcodes")) |codes|
+    const success_codes: [][]const u8 = if (elem.getAttribute("successcodes")) |codes|
         try splitCommaAlloc(allocator, codes)
     else
         &[_][]const u8{};
 
-    var error_codes: [][]const u8 = if (elem.getAttribute("errorcodes")) |codes|
+    const error_codes: [][]const u8 = if (elem.getAttribute("errorcodes")) |codes|
         try splitCommaAlloc(allocator, codes)
     else
         &[_][]const u8{};

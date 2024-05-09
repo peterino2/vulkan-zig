@@ -1,21 +1,20 @@
 const std = @import("std");
 const generate = @import("generator.zig").generate;
 const path = std.fs.path;
-const Builder = std.build.Builder;
-const Step = std.build.Step;
+const Step = std.Build.Step;
 
 pub const GenerateStep = struct {
     step: Step,
-    builder: *Builder,
+    builder: *std.Build,
 
     /// The path to vk.xml
     spec_path: []const u8,
 
-    package: *std.build.Module,
+    package: *std.Build.Module,
 
-    output_file: std.build.GeneratedFile,
+    output_file: std.Build.GeneratedFile,
 
-    pub fn init(builder: *Builder, spec_path: []const u8, out_path: []const u8) *GenerateStep {
+    pub fn init(builder: *std.Build, spec_path: []const u8, out_path: []const u8) *GenerateStep {
         const self = builder.allocator.create(GenerateStep) catch unreachable;
         const full_out_path = path.join(builder.allocator, &[_][]const u8{
             // builder.build_root.path.?,
@@ -35,7 +34,7 @@ pub const GenerateStep = struct {
         };
 
         self.*.package = builder.createModule(.{
-            .source_file = .{ .generated = &self.output_file },
+            .root_source_file = .{ .generated = &self.output_file },
         });
 
         return self;
@@ -45,7 +44,7 @@ pub const GenerateStep = struct {
     /// root. Typically, the location of the LunarG SDK root can be retrieved by querying for the VULKAN_SDK
     /// environment variable, set by activating the environment setup script located in the SDK root.
     /// `builder` and `out_path` are used in the same manner as `init`.
-    pub fn initFromSdk(builder: *Builder, sdk_path: []const u8, out_path: []const u8) *GenerateStep {
+    pub fn initFromSdk(builder: *std.Build, sdk_path: []const u8, out_path: []const u8) *GenerateStep {
         const spec_path = std.fs.path.join(
             builder.allocator,
             &[_][]const u8{ sdk_path, "share/vulkan/registry/vk.xml" },
@@ -60,7 +59,7 @@ pub const GenerateStep = struct {
     /// by parsing it and rendering with `std.zig.parse` and `std.zig.render` respectively.
     fn make(step: *Step, progress: *std.Progress.Node) !void {
         _ = progress;
-        const self = @fieldParentPtr(GenerateStep, "step", step);
+        const self: *GenerateStep = @fieldParentPtr("step", step);
         const cwd = std.fs.cwd();
 
         const spec = try cwd.readFileAlloc(self.builder.allocator, self.spec_path, std.math.maxInt(usize));
@@ -73,7 +72,7 @@ pub const GenerateStep = struct {
         const tree = try std.zig.Ast.parse(self.builder.allocator, src, .zig);
         std.debug.assert(tree.errors.len == 0); // If this triggers, vulkan-zig produced invalid code.
 
-        var formatted = try tree.render(self.builder.allocator);
+        const formatted = try tree.render(self.builder.allocator);
 
         const dir = path.dirname(self.output_file.path.?).?;
         try cwd.makePath(dir);

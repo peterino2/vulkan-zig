@@ -1,6 +1,6 @@
 const std = @import("std");
 const path = std.fs.path;
-const Builder = std.build.Builder;
+const Builder = std.Build;
 const Step = std.build.Step;
 
 /// Utility functionality to help with compiling shaders from build.zig.
@@ -72,7 +72,7 @@ pub const ShaderCompileStep = struct {
     /// Internal build function.
     fn make(step: *Step, progress: *std.Progress.Node) !void {
         _ = progress;
-        const self = @fieldParentPtr(ShaderCompileStep, "step", step);
+        const self: *ShaderCompileStep = @fieldParentPtr("step", step);
         const cwd = std.fs.cwd();
 
         const cmd = try self.builder.allocator.alloc([]const u8, self.glslc_cmd.len + 3);

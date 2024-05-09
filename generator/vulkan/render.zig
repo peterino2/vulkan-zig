@@ -29,10 +29,10 @@ const preamble =
     \\    return struct {
     \\        pub const IntType = Int;
     \\        pub fn toInt(self: FlagsType) IntType {
-    \\            return @bitCast(IntType, self);
+    \\            return @bitCast(self);
     \\        }
     \\        pub fn fromInt(flags: IntType) FlagsType {
-    \\            return @bitCast(FlagsType, flags);
+    \\            return @bitCast(flags);
     \\        }
     \\        pub fn merge(lhs: FlagsType, rhs: FlagsType) FlagsType {
     \\            return fromInt(toInt(lhs) | toInt(rhs));
@@ -55,16 +55,16 @@ const preamble =
     \\    return (@as(u32, variant) << 29) | (@as(u32, major) << 22) | (@as(u32, minor) << 12) | patch;
     \\}
     \\pub fn apiVersionVariant(version: u32) u3 {
-    \\    return @truncate(u3, version >> 29);
+    \\    return @truncate(version >> 29);
     \\}
     \\pub fn apiVersionMajor(version: u32) u7 {
-    \\    return @truncate(u7, version >> 22);
+    \\    return @truncate(version >> 22);
     \\}
     \\pub fn apiVersionMinor(version: u32) u10 {
-    \\    return @truncate(u10, version >> 12);
+    \\    return @truncate(version >> 12);
     \\}
     \\pub fn apiVersionPatch(version: u32) u12 {
-    \\    return @truncate(u12, version);
+    \\    return @truncate(version);
     \\}
     \\
 ;
@@ -1057,7 +1057,7 @@ fn Renderer(comptime WriterType: type) type {
                 \\            const fields_len = fields_len: {{
                 \\                var fields_len: usize = 0;
                 \\                for (@typeInfo({0s}CommandFlags).Struct.fields) |field| {{
-                \\                    fields_len += @intCast(usize, @intFromBool(@field(cmds, field.name)));
+                \\                    fields_len += @intCast(@intFromBool(@field(cmds, field.name)));
                 \\                }}
                 \\                break :fields_len fields_len;
                 \\            }};
@@ -1079,7 +1079,7 @@ fn Renderer(comptime WriterType: type) type {
                 \\            }}
                 \\            break :blk @Type(.{{
                 \\                .Struct = .{{
-                \\                    .layout = .Auto,
+                \\                    .layout = .auto,
                 \\                    .fields = &fields,
                 \\                    .decls = &[_]std.builtin.Type.Declaration{{}},
                 \\                    .is_tuple = false,
@@ -1122,18 +1122,18 @@ fn Renderer(comptime WriterType: type) type {
                 \\pub fn load({[params]s}) error{{CommandLoadFailure}}!Self {{
                 \\    var self: Self = undefined;
                 \\    inline for (std.meta.fields(Dispatch)) |field| {{
-                \\        const name = @ptrCast([*:0]const u8, field.name ++ "\x00");
+                \\        const name: [*:0]const u8 = @ptrCast(field.name ++ "\x00");
                 \\        const cmd_ptr = loader({[first_arg]s}, name) orelse return error.CommandLoadFailure;
-                \\        @field(self.dispatch, field.name) = @ptrCast(field.type, cmd_ptr);
+                \\        @field(self.dispatch, field.name) = @ptrCast(cmd_ptr);
                 \\    }}
                 \\    return self;
                 \\}}
                 \\pub fn loadNoFail({[params]s}) Self {{
                 \\    var self: Self = undefined;
                 \\    inline for (std.meta.fields(Dispatch)) |field| {{
-                \\        const name = @ptrCast([*:0]const u8, field.name ++ "\x00");
+                \\        const name: [*:0]const u8 = @ptrCast(field.name ++ "\x00");
                 \\        const cmd_ptr = loader({[first_arg]s}, name) orelse undefined;
-                \\        @field(self.dispatch, field.name) = @ptrCast(field.type, cmd_ptr);
+                \\        @field(self.dispatch, field.name) = @ptrCast(cmd_ptr);
                 \\    }}
                 \\    return self;
                 \\}}
